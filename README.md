@@ -1,72 +1,74 @@
 # NettyDemo
+* This is a clone of the repository https://github.com/aLittleGreens/NettyDemo
 
- > Netty是基于Java NIO client-server的网络应用框架，使用Netty可以快速开发网络应用
+ > Netty is a network application framework based on Java NIO client-server, using Netty can quickly develop network applications
  
-   >更多用法请请跳转到[https://github.com/netty/netty](https://github.com/netty/netty)  
+    > For more usage, please jump to https://github.com/netty/netty
  
- **本项目基于Netty在Android平台所建项目，只是提供Netty的使用方式，大家可根据自己的需求，做相应的定制。**
+  **This project is based on the project built by Netty on the Android platform. It only provides the usage method of Netty. You can customize it according to your own needs. **
  
- **演示时，客户端在Const.java中请修改TCP服务端ip地址就行了，服务端通过切换通道，可以与多个客户端通信。**
+  **During the demonstration, the client can modify the IP address of the TCP server in Const.java. The server can communicate with multiple clients by switching channels. **
  
- 最后，不足之处请海涵，多多提issue，大家一起解决。
- ## 如何导入
+  Finally, if there are any deficiencies, please ask Haihan to raise more issues, and we will solve them together.
+  
+  ## How to import
  
 ```
  dependencies {
   implementation 'com.littlegreens.netty.client:nettyclientlib:1.0.5'
  } 
 ```
- ## 一、先看演示效果，后面有详细的用法教程
- <img src="https://github.com/cai784921129/NettyDemo/blob/master/screenshot/clent.gif" width="280px"/> <img src="https://github.com/cai784921129/NettyDemo/blob/master/screenshot/server.gif" height="280px"/>
+## 1. First look at the demonstration effect, followed by a detailed usage tutorial
+  <img src="https://github.com/cai784921129/NettyDemo/blob/master/screenshot/clent.gif" width="280px"/> <img src="https://github.com/cai784921129/NettyDemo /blob/master/screenshot/server.gif" height="280px"/>
 
-如果是作为TCP客户端使用的话，可以直接依赖
+If it is used as a TCP client, you can directly rely on
 
-## 二、HOW TO USE?
+## 2, HOW TO USE?
 
-1. **创建TCP客户端**
+1. **Create TCP client**
 ```Java
-      NettyTcpClient  mNettyTcpClient = new NettyTcpClient.Builder()
-                .setHost(Const.HOST)    //设置服务端地址
-                .setTcpPort(Const.TCP_PORT) //设置服务端端口号
-                .setMaxReconnectTimes(5)    //设置最大重连次数
-                .setReconnectIntervalTime(5)    //设置重连间隔时间。单位：秒
-                .setSendheartBeat(true) //设置是否发送心跳
-                .setHeartBeatInterval(5)    //设置心跳间隔时间。单位：秒
-                .setHeartBeatData("I'm is HeartBeatData") //设置心跳数据，可以是String类型，也可以是byte[]，以后设置的为准
-                .setIndex(0)    //设置客户端标识.(因为可能存在多个tcp连接)
-//                .setPacketSeparator("#")//用特殊字符，作为分隔符，解决粘包问题，默认是用换行符作为分隔符
-//                .setMaxPacketLong(1024)//设置一次发送数据的最大长度，默认是1024
-                .build();
+     NettyTcpClient mNettyTcpClient = new NettyTcpClient.Builder()
+                 .setHost(Const.HOST)                       // Set server address
+                 .setTcpPort(Const.TCP_PORT)                // Set the server port number
+                 .setMaxReconnectTimes(5)                   // Set the maximum number of reconnections
+                 .setReconnectIntervalTime(5)               // Set the reconnection interval. Unit: second
+                 .setSendheartBeat(true)                    // Set whether to send heartbeat
+                 .setHeartBeatInterval(5)                   // Set the heartbeat interval. Unit: second
+                 .setHeartBeatData("I'm is HeartBeatData")  // Set the heartbeat data, which can be String type or byte[], whichever is set later
+                 .setIndex(0)                               // Set the client ID. (Because there may be multiple tcp connections)
+//               .setPacketSeparator("#")                   // Use special characters as separators to solve the problem of sticky packets. The default is to use newline characters as separators
+//               .setMaxPacketLong(1024)                    // Set the maximum length of data sent once, the default is 1024
+                 .build();
 ```
 
-2. **设置监听**
+2. **Set up monitoring**
 ```Java
         mNettyTcpClient.setListener(new NettyClientListener<String>() {
             @Override
             public void onMessageResponseClient(String msg, int index) {
-                //服务端过来的消息回调
+                // Message callback from the server
             }
 
             @Override
             public void onClientStatusConnectChanged(int statusCode, int index) {
-               //连接状态回调
+               // connection status callback
             }
         });
 ```
-3. **连接、断开连接**
-- 判断是否已经连接
+3. **connect, disconnect**
+- Determine whether it is connected
 ```Java
 mNettyTcpClient.getConnectStatus()
 ```
-- 连接
+- Сonnect
 ```Java
 mNettyTcpClient.connect();
 ```
-- 断开连接
+- Disconnect
 ```Java
 mNettyTcpClient.disconnect();
 ```
-4. **发送信息到服务端**
+4. ** Send information to the server **
 ```Java
                     mNettyTcpClient.sendMsgToServer(msg, new MessageStateListener() {
                         @Override
@@ -80,10 +82,10 @@ mNettyTcpClient.disconnect();
                     });
 ```
 
-## 二、小伙伴遇到的问题
-1、服务端反馈的消息被截断
-答：由于socket会粘包，sdk中默认的采用的是特殊符号作为分割符，来解决粘包问题，默认采用的分隔符是分割符，也可以通过setPacketSeparator，设置自定义的换行符，这样客户端发送信息的时候，sdk会在末尾，添加分隔符，这里需要注意服务端，返回信息的时候，也要添加对应的分隔符。
+## Second, the problems encountered by the small partners
+1. The message fed back by the server is truncated
+Answer: Since the socket will stick packets, the sdk uses a special symbol as the separator by default to solve the problem of sticking packets. When the client sends information, the sdk will add a delimiter at the end. Here you need to pay attention to the server. When returning information, the corresponding delimiter should also be added.
 
-2、master分支代码，不支持发送byte[]格式，byte[]格式的需求，请参考develop_2.0 分支
+2. The master branch code does not support sending byte[] format, please refer to the develop_2.0 branch for the requirement of byte[] format
 
 
