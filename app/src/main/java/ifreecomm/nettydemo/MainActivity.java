@@ -41,16 +41,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initView();
 
         mNettyTcpClient = new NettyTcpClient.Builder()
-                .setHost(Const.HOST)    //设置服务端地址
-                .setTcpPort(Const.TCP_PORT) //设置服务端端口号
-                .setMaxReconnectTimes(5)    //设置最大重连次数
-                .setReconnectIntervalTime(5)    //设置重连间隔时间。单位：秒
-                .setSendheartBeat(true) //设置是否发送心跳
-                .setHeartBeatInterval(5)    //设置心跳间隔时间。单位：秒
-                .setHeartBeatData("I'm is HeartBeatData") //设置心跳数据，可以是String类型，也可以是byte[]，以后设置的为准
-                .setIndex(0)    //设置客户端标识.(因为可能存在多个tcp连接)
-//                .setPacketSeparator("#")//用特殊字符，作为分隔符，解决粘包问题，默认是用换行符作为分隔符
-//                .setMaxPacketLong(1024)//设置一次发送数据的最大长度，默认是1024
+                .setHost(Const.HOST)                        // Set server address
+                .setTcpPort(Const.TCP_PORT)                 // Set the server port number
+                .setMaxReconnectTimes(5)                    // Set the maximum number of reconnections
+                .setReconnectIntervalTime(5)                // Set the reconnection interval. Unit: second
+                .setSendheartBeat(true)                     // Set whether to send heartbeat
+                .setHeartBeatInterval(5)                    // Set the heartbeat interval. Unit: second
+                .setHeartBeatData("I'm is HeartBeatData")   // Set the heartbeat data, which can be String type or byte[], whichever is set later
+                .setIndex(0)                                // Set the client ID. (Because there may be multiple tcp connections)
+//               .setPacketSeparator("#")                   // Use special characters as separators to solve the problem of sticky packets. The default is to use newline characters as separators
+//               .setMaxPacketLong(1024)                    // Set the maximum length of data sent once, the default is 1024
                 .build();
 
         mNettyTcpClient.setListener(MainActivity.this); //设置TCP监听
@@ -90,21 +90,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             case R.id.send_btn:
                 if (!mNettyTcpClient.getConnectStatus()) {
-                    Toast.makeText(getApplicationContext(), "未连接,请先连接", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Not connected, please connect first", Toast.LENGTH_SHORT).show();
                 } else {
                     final String msg = mSendET.getText().toString();
                     if (TextUtils.isEmpty(msg.trim())) {
                         return;
                     }
-                    mNettyTcpClient.sendMsgToServer(msg, new MessageStateListener() {
-                        @Override
-                        public void isSendSuccss(boolean isSuccess) {
-                            if (isSuccess) {
-                                Log.d(TAG, "Write auth successful");
-                                logSend(msg);
-                            } else {
-                                Log.d(TAG, "Write auth error");
-                            }
+                    mNettyTcpClient.sendMsgToServer(msg, isSuccess -> {
+                        if (isSuccess) {
+                            Log.d(TAG, "Write auth successful");
+                            logSend(msg);
+                        } else {
+                            Log.d(TAG, "Write auth error");
                         }
                     });
                     mSendET.setText("");
@@ -124,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void connect() {
         Log.d(TAG, "connect");
         if (!mNettyTcpClient.getConnectStatus()) {
-            mNettyTcpClient.connect();//连接服务器
+            mNettyTcpClient.connect(); // connect to the server
         } else {
             mNettyTcpClient.disconnect();
         }
@@ -178,7 +175,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 方法三：
+     * Method 3:
      * byte[] to hex string
      *
      * @param bytes
@@ -186,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      */
     public static String bytesToHexFun3(byte[] bytes, int length) {
         StringBuilder buf = new StringBuilder(length * 2);
-        for (int i = 0; i < length; i++) {// 使用String的format方法进行转换
+        for (int i = 0; i < length; i++) { // Use String's format method to convert
             buf.append(String.format("%02x", new Integer(bytes[i] & 0xFF)));
         }
         return buf.toString();

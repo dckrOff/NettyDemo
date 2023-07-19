@@ -39,7 +39,7 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ItemHolder> {
             LogBean log = mDataList.get(holder.getAdapterPosition());
             String msg = log.mTime + " " + log.mLog;
             cmb.setPrimaryClip(ClipData.newPlainText(null, msg));
-            Toast.makeText(v.getContext(), "已复制到剪贴板", Toast.LENGTH_LONG).show();
+            Toast.makeText(v.getContext(), "copied to clipboard", Toast.LENGTH_LONG).show();
             return true;
         });
     }
@@ -55,8 +55,8 @@ public class LogAdapter extends RecyclerView.Adapter<LogAdapter.ItemHolder> {
 
         public ItemHolder(View itemView) {
             super(itemView);
-            mTime = (TextView) itemView.findViewById(R.id.time);
-            mLog = (TextView) itemView.findViewById(R.id.logtext);
+            mTime = itemView.findViewById(R.id.time);
+            mLog = itemView.findViewById(R.id.logtext);
         }
     }
 

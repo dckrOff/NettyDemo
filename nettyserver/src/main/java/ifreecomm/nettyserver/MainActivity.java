@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private LogAdapter mReceLogAdapter = new LogAdapter();
     private TextView receiveTv;
 
-    List<ClientChanel> clientChanelArray = new ArrayList<>(); //Store client channel information
+    final List<ClientChanel> clientChanelArray = new ArrayList<>(); // Store client channel information
     private Spinner mSpinner;
     private CustomSpinnerAdapter spinnerAdapter;
 
@@ -114,9 +114,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
 
             case R.id.startServer:
-
                 startServer();
-
                 break;
 
             case R.id.send_btn:
@@ -128,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         return;
                     }
                     NettyTcpServer.getInstance().sendMsgToServer(msg, channelFuture -> {
-                        if (channelFuture.isSuccess()) {                //4
+                        if (channelFuture.isSuccess()) { //4
                             Log.d(TAG, "Write auth successful");
                             logSend(msg);
                         } else {
@@ -174,12 +172,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         synchronized (clientChanelArray) {
             clientChanelArray.add(clientChanel);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(MainActivity.this, clientChanel.getClientIp() + " establish connection", Toast.LENGTH_LONG).show();
-                    spinnerAdapter.notifyDataSetChanged();
-                }
+            runOnUiThread(() -> {
+                Toast.makeText(MainActivity.this, clientChanel.getClientIp() + " establish connection", Toast.LENGTH_LONG).show();
+                spinnerAdapter.notifyDataSetChanged();
             });
         }
 
@@ -192,10 +187,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         for (int i = 0; i < clientChanelArray.size(); i++) {
             final ClientChanel clientChanel = clientChanelArray.get(i);
             if (clientChanel.getShortId().equals(channel.id().asShortText())) {
-
-                /**
-                 * When the first item in the Spinner is removed, onItemSelected will not be triggered (because mSelectedPosition != mOldSelectedPosition)
-                 */
+//               When the first item in the Spinner is removed, onItemSelected will not be triggered (because mSelectedPosition != mOldSelectedPosition)
                 if (i == 0) {
                     try {
                         Field field = AdapterView.class.getDeclaredField("mOldSelectedPosition");
@@ -214,33 +206,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         spinnerAdapter.notifyDataSetChanged();
                     });
                 }
-
                 return;
             }
         }
-
     }
 
     @Override
     public void onStartServer() {
         Log.e(TAG, "onStartServer");
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                startServer.setText("stopServer");
-            }
-        });
+        runOnUiThread(() -> startServer.setText("stopServer"));
     }
 
     @Override
     public void onStopServer() {
         Log.e(TAG, "onStopServer");
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                startServer.setText("startServer");
-            }
-        });
+        runOnUiThread(() -> startServer.setText("startServer"));
     }
 
 
@@ -259,12 +239,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void logRece(String log) {
         LogBean logBean = new LogBean(System.currentTimeMillis(), log);
         mReceLogAdapter.getDataList().add(0, logBean);
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mReceLogAdapter.notifyDataSetChanged();
-            }
-        });
+        runOnUiThread(() -> mReceLogAdapter.notifyDataSetChanged());
     }
-
 }

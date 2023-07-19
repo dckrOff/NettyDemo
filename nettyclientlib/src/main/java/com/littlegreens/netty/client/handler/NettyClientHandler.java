@@ -41,8 +41,8 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
     }
 
     /**
-     * <p>设定IdleStateHandler心跳检测每x秒进行一次读检测，
-     * 如果x秒内ChannelRead()方法未被调用则触发一次userEventTrigger()方法 </p>
+     * <p>Set the IdleStateHandler heartbeat detection to perform a read detection every x seconds,
+     * If the ChannelRead() method is not called within x seconds, the userEventTrigger() method will be triggered once </p>
      *
      * @param ctx ChannelHandlerContext
      * @param evt IdleStateEvent
@@ -51,7 +51,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
-            if (event.state() == IdleState.WRITER_IDLE) {   //发送心跳
+            if (event.state() == IdleState.WRITER_IDLE) {   // send heartbeat
 //                ctx.channel().writeAndFlush("Heartbeat" + System.getProperty("line.separator"));
                 if (isSendheartBeat) {
                     if (heartBeatData == null) {
@@ -69,14 +69,14 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
                         }
                     }
                 } else {
-                    Log.e(TAG, "不发送心跳");
+                    Log.e(TAG, "No heartbeat");
                 }
             }
         }
     }
 
     /**
-     * <p>客户端上线</p>
+     * <p>Client online</p>
      *
      * @param ctx ChannelHandlerContext
      */
@@ -88,7 +88,7 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
     }
 
     /**
-     * <p>客户端下线</p>
+     * <p>Client offline</p>
      *
      * @param ctx ChannelHandlerContext
      */
@@ -101,10 +101,10 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
     }
 
     /**
-     * 客户端收到消息
+     * The client receives the message
      *
      * @param channelHandlerContext ChannelHandlerContext
-     * @param msg                   消息
+     * @param msg the message
      */
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, String msg) {
@@ -113,8 +113,8 @@ public class NettyClientHandler extends SimpleChannelInboundHandler<String> {
     }
 
     /**
-     * @param ctx   ChannelHandlerContext
-     * @param cause 异常
+     * @param ctx ChannelHandlerContext
+     * @param cause exception
      */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {

@@ -14,7 +14,7 @@ import java.util.List;
 import ifreecomm.nettyserver.bean.ClientChanel;
 
 /**
- * Created by  IT小蔡 on 2018-11-10.
+ * Created by  IT Xiaocai on 2018-11-10.
  */
 
 public class CustomSpinnerAdapter extends BaseAdapter {

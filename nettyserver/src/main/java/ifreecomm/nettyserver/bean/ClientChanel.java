@@ -3,8 +3,8 @@ package ifreecomm.nettyserver.bean;
 import io.netty.channel.Channel;
 
 /**
- * Created by  IT小蔡 on 2018-11-10.
- * 客户端信息
+ * Created by IT Xiaocai on 2018-11-10.
+ * Client information
  */
 
 public class ClientChanel {

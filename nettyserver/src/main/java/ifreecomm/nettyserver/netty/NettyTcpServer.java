@@ -25,8 +25,8 @@ import io.netty.util.CharsetUtil;
 
 
 /**
- * TCP 服务端
- * 目前服务端支持连接多个客户端
+ * TCP server
+ * Currently the server supports connecting multiple clients
  */
 public class NettyTcpServer {
 
@@ -146,7 +146,7 @@ public class NettyTcpServer {
     }
 
 
-    // 异步发送消息
+    // Send messages asynchronously
     public boolean sendMsgToServer(String data, ChannelFutureListener listener) {
         boolean flag = channel != null && channel.isActive();
         String separator = TextUtils.isEmpty(packetSeparator) ? System.getProperty("line.separator") : packetSeparator;
@@ -156,7 +156,7 @@ public class NettyTcpServer {
         return flag;
     }
 
-    // 同步发送消息
+    // Send messages synchronously
     public boolean sendMsgToServer(String data) {
         boolean flag = channel != null && channel.isActive();
         if (flag) {
@@ -180,8 +180,8 @@ public class NettyTcpServer {
 //    }
 
     /**
-     * 切换通道
-     * 设置服务端，与哪个客户端通信
+     * switch channel
+     * Set the server and which client to communicate with
      *
      * @param channel
      */

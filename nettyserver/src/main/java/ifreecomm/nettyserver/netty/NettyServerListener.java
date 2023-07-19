@@ -20,24 +20,24 @@ public interface NettyServerListener<T> {
     void onMessageResponseServer(T msg,String ChannelId);
 
     /**
-     * server开启成功
+     * server started successfully
      */
     void onStartServer();
 
     /**
-     * server关闭
+     * server shut down
      */
     void onStopServer();
 
     /**
-     * 与客户端建立连接
+     * Establish a connection with the client
      *
      * @param channel
      */
     void onChannelConnect(Channel channel);
 
     /**
-     * 与客户端断开连接
+     * Disconnect from client
      * @param
      */
     void onChannelDisConnect(Channel channel);

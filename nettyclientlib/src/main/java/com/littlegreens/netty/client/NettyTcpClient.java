@@ -32,7 +32,7 @@ import io.netty.util.CharsetUtil;
 
 /**
  * Created by littleGreens on 2018-11-10.
- * TCP 客户端
+ * TCP client
  */
 public class NettyTcpClient {
     private static final String TAG = "NettyTcpClient";
@@ -46,7 +46,7 @@ public class NettyTcpClient {
     private boolean isConnect = false;
 
     /**
-     * 最大重连次数
+     * Maximum number of reconnections
      */
     private int MAX_CONNECT_TIMES = Integer.MAX_VALUE;
 
@@ -62,17 +62,17 @@ public class NettyTcpClient {
     private int tcp_port;
     private int mIndex;
     /**
-     * 心跳间隔时间
+     * heartbeat interval
      */
     private long heartBeatInterval = 5;//单位秒
 
     /**
-     * 是否发送心跳
+     * Whether to send heartbeat
      */
     private boolean isSendheartBeat = false;
 
     /**
-     * 心跳数据，可以是String类型，也可以是byte[].
+     * Heartbeat data, which can be String type or byte[].
      */
     private Object heartBeatData;
 
@@ -145,22 +145,22 @@ public class NettyTcpClient {
                 isConnecting = true;
                 group = new NioEventLoopGroup();
                 Bootstrap bootstrap = new Bootstrap().group(group)
-                        .option(ChannelOption.TCP_NODELAY, true)//屏蔽Nagle算法试图
+                        .option(ChannelOption.TCP_NODELAY, true) // Shield Nagle's algorithm from trying to
                         .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
                         .channel(NioSocketChannel.class)
                         .handler(new ChannelInitializer<SocketChannel>() {
                             @Override
                             public void initChannel(SocketChannel ch) throws Exception {
                                 if (isSendheartBeat) {
-                                    ch.pipeline().addLast("ping", new IdleStateHandler(0, heartBeatInterval, 0, TimeUnit.SECONDS));//5s未发送数据，回调userEventTriggered
+                                    ch.pipeline().addLast("ping", new IdleStateHandler(0, heartBeatInterval, 0, TimeUnit.SECONDS)); // 5s no data sent, callback userEventTriggered
                                 }
 
-                                //黏包处理,需要客户端、服务端配合
+                                // Sticky package processing requires the cooperation of client and server
 
                                 if (!TextUtils.isEmpty(packetSeparator)) {
-                                    ByteBuf delimiter= Unpooled.buffer();
+                                    ByteBuf delimiter = Unpooled.buffer();
                                     delimiter.writeBytes(packetSeparator.getBytes());
-                                    ch.pipeline().addLast(new DelimiterBasedFrameDecoder(maxPacketLong,delimiter));
+                                    ch.pipeline().addLast(new DelimiterBasedFrameDecoder(maxPacketLong, delimiter));
                                 } else {
                                     ch.pipeline().addLast(new LineBasedFrameDecoder(maxPacketLong));
                                 }
@@ -168,30 +168,26 @@ public class NettyTcpClient {
                                 ch.pipeline().addLast(new StringDecoder(CharsetUtil.UTF_8));
 
 
-                                ch.pipeline().addLast(new NettyClientHandler(listener, mIndex, isSendheartBeat, heartBeatData,packetSeparator));
+                                ch.pipeline().addLast(new NettyClientHandler(listener, mIndex, isSendheartBeat, heartBeatData, packetSeparator));
                             }
                         });
-
                 try {
-                    channelFuture = bootstrap.connect(host, tcp_port).addListener(new ChannelFutureListener() {
-                        @Override
-                        public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                            if (channelFuture.isSuccess()) {
-                                Log.e(TAG, "连接成功");
-                                reconnectNum = MAX_CONNECT_TIMES;
-                                isConnect = true;
-                                channel = channelFuture.channel();
-                            } else {
-                                Log.e(TAG, "连接失败");
-                                isConnect = false;
-                            }
-                            isConnecting = false;
+                    channelFuture = bootstrap.connect(host, tcp_port).addListener((ChannelFutureListener) channelFuture1 -> {
+                        if (channelFuture1.isSuccess()) {
+                            Log.e(TAG, "Connection succeeded");
+                            reconnectNum = MAX_CONNECT_TIMES;
+                            isConnect = true;
+                            channel = channelFuture1.channel();
+                        } else {
+                            Log.e(TAG, "Connection failed");
+                            isConnect = false;
                         }
+                        isConnecting = false;
                     }).sync();
 
                     // Wait until the connection is closed.
                     channelFuture.channel().closeFuture().sync();
-                    Log.e(TAG, " 断开连接");
+                    Log.e(TAG, "Disconnect");
                 } catch (Exception e) {
                     e.printStackTrace();
                 } finally {
@@ -211,42 +207,35 @@ public class NettyTcpClient {
 
 
     public void disconnect() {
-        Log.e(TAG, "disconnect");
+        Log.e(TAG, "Disconnect");
         isNeedReconnect = false;
         group.shutdownGracefully();
     }
 
     public void reconnect() {
-        Log.e(TAG, "reconnect");
+        Log.e(TAG, "Reconnect");
         if (isNeedReconnect && reconnectNum > 0 && !isConnect) {
             reconnectNum--;
             SystemClock.sleep(reconnectIntervalTime);
             if (isNeedReconnect && reconnectNum > 0 && !isConnect) {
-                Log.e(TAG, "重新连接");
+                Log.e(TAG, "Reconnect");
                 connectServer();
             }
         }
     }
 
     /**
-     * 异步发送
+     * Send asynchronously
      *
-     * @param data 要发送的数据
-     * @param listener 发送结果回调
-     * @return 方法执行结果
+     * @param data     the data to send
+     * @param listener send result callback
      */
-    public boolean sendMsgToServer(String data, final MessageStateListener listener) {
+    public void sendMsgToServer(String data, final MessageStateListener listener) {
         boolean flag = channel != null && isConnect;
         if (flag) {
             String separator = TextUtils.isEmpty(packetSeparator) ? System.getProperty("line.separator") : packetSeparator;
-            ChannelFuture channelFuture = channel.writeAndFlush(data + separator).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    listener.isSendSuccss(channelFuture.isSuccess());
-                }
-            });
+            ChannelFuture channelFuture = channel.writeAndFlush(data + separator).addListener((ChannelFutureListener) channelFuture1 -> listener.isSendSuccss(channelFuture1.isSuccess()));
         }
-        return flag;
 
 //        ByteBuf buffer = Unpooled.copiedBuffer(data, Charset.forName("UTF-8"));
 //        if (flag) {
@@ -259,10 +248,10 @@ public class NettyTcpClient {
     }
 
     /**
-     * 同步发送
+     * Send synchronously
      *
-     * @param data 要发送的数据
-     * @return 方法执行结果
+     * @param data the data to send
+     * @return method execution result
      */
     public boolean sendMsgToServer(String data) {
         boolean flag = channel != null && isConnect;
@@ -279,20 +268,15 @@ public class NettyTcpClient {
         boolean flag = channel != null && isConnect;
         if (flag) {
             ByteBuf buf = Unpooled.copiedBuffer(data);
-            channel.writeAndFlush(buf).addListener(new ChannelFutureListener() {
-                @Override
-                public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                    listener.isSendSuccss(channelFuture.isSuccess());
-                }
-            });
+            channel.writeAndFlush(buf).addListener((ChannelFutureListener) channelFuture -> listener.isSendSuccss(channelFuture.isSuccess()));
         }
         return flag;
     }
 
     /**
-     * 获取TCP连接状态
+     * Get TCP connection status
      *
-     * @return  获取TCP连接状态
+     * @return get TCP connection status
      */
     public boolean getConnectStatus() {
         return isConnect;
@@ -320,43 +304,43 @@ public class NettyTcpClient {
     }
 
     /**
-     * 构建者，创建NettyTcpClient
+     * Builder, create NettyTcpClient
      */
     public static class Builder {
 
         /**
-         * 最大重连次数
+         * Maximum number of reconnections
          */
         private int MAX_CONNECT_TIMES = Integer.MAX_VALUE;
 
         /**
-         * 重连间隔
+         * reconnection interval
          */
         private long reconnectIntervalTime = 5000;
         /**
-         * 服务器地址
+         * server address
          */
         private String host;
         /**
-         * 服务器端口
+         * server port
          */
         private int tcp_port;
         /**
-         * 客户端标识，(因为可能存在多个连接)
+         * Client ID, (since there may be multiple connections)
          */
         private int mIndex;
 
         /**
-         * 是否发送心跳
+         * Whether to send heartbeat
          */
         private boolean isSendheartBeat;
         /**
-         * 心跳时间间隔
+         * heartbeat interval
          */
         private long heartBeatInterval = 5;
 
         /**
-         * 心跳数据，可以是String类型，也可以是byte[].
+         * Heartbeat data, which can be String type or byte[].
          */
         private Object heartBeatData;
 
