@@ -37,12 +37,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         findViews();
         initView();
 
+        Bundle arguments = getIntent().getExtras();
+        String HOST = arguments.getString("ip_address");
+        int PORT = arguments.getInt("port");
+
         mNettyTcpClient = new NettyTcpClient.Builder()
-                .setHost(Const.HOST)                        // Set server address
-                .setTcpPort(Const.TCP_PORT)                 // Set the server port number
+                .setHost(HOST)                        // Set server address
+                .setTcpPort(PORT)                 // Set the server port number
                 .setMaxReconnectTimes(5)                    // Set the maximum number of reconnections
                 .setReconnectIntervalTime(5)                // Set the reconnection interval. Unit: second
                 .setSendheartBeat(true)                     // Set whether to send heartbeat
@@ -53,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //               .setMaxPacketLong(1024)                    // Set the maximum length of data sent once, the default is 1024
                 .build();
 
-        mNettyTcpClient.setListener(MainActivity.this); //设置TCP监听
+        mNettyTcpClient.setListener(MainActivity.this); // Настроить TCP-мониторинг
     }
 
     private void initView() {
